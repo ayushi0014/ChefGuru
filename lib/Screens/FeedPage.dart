@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:cook_chef/Widgets/BottomCommentsSheet.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cook_chef/Firestore/CloudFirestore.dart';
+import 'package:provider/provider.dart';
 
 final _firestore = FirebaseFirestore.instance;
 
@@ -16,47 +17,47 @@ class FeedPage extends StatefulWidget {
 
 class _FeedPageState extends State<FeedPage> {
   /* This method is to setup each dishCategory */
-  String _selectedTab = 'Veg';
-  Material _dishCategory(String text, double width) {
-    return Material(
-      borderRadius: BorderRadius.all(Radius.circular(5.0)),
-      shadowColor: Color(0xff7e807f),
-      elevation: (text == _selectedTab) ? 7 : 0,
-      child: Container(
-        // height: width * 0.1,
-        width: width * 0.3,
-        padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 10.5),
-        decoration: BoxDecoration(
-          border: (text != _selectedTab)
-              ? Border.all(color: Colors.grey[400])
-              : Border(),
-          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-          // boxShadow: [
-          //   (text == 'Indian')
-          //       ? //background color of box
-          //       BoxShadow(
-          //           color: Colors.grey,
-          //           spreadRadius: 1,
-          //           blurRadius: 0.5,
-          //           offset: Offset(0, 2),
-          //         )
-          //       : BoxShadow(
-          //           color: Colors.white,
-          //         ),
-          // ],
-          color: Colors.white,
-        ),
-        // child: Padding(
-        //   padding: const EdgeInsets.all(8.0),
-        //   child: Text(
-        //     text,
-        //     textAlign: TextAlign.center,
-        //     style: TextStyle(fontWeight: FontWeight.bold),
-        //   ),
-        // ),
-      ),
-    );
-  }
+  //String _selectedTab = 'Veg';
+  // Material _dishCategory(String text, double width) {
+  //   return Material(
+  //     borderRadius: BorderRadius.all(Radius.circular(5.0)),
+  //     shadowColor: Color(0xff7e807f),
+  //     elevation: (text == _selectedTab) ? 7 : 0,
+  //     child: Container(
+  //       // height: width * 0.1,
+  //       width: width * 0.3,
+  //       padding: EdgeInsets.symmetric(vertical: 3.0, horizontal: 10.5),
+  //       decoration: BoxDecoration(
+  //         border: (text != _selectedTab)
+  //             ? Border.all(color: Colors.grey[400])
+  //             : Border(),
+  //         borderRadius: BorderRadius.all(Radius.circular(5.0)),
+  //         // boxShadow: [
+  //         //   (text == 'Indian')
+  //         //       ? //background color of box
+  //         //       BoxShadow(
+  //         //           color: Colors.grey,
+  //         //           spreadRadius: 1,
+  //         //           blurRadius: 0.5,
+  //         //           offset: Offset(0, 2),
+  //         //         )
+  //         //       : BoxShadow(
+  //         //           color: Colors.white,
+  //         //         ),
+  //         // ],
+  //         color: Colors.white,
+  //       ),
+  //       // child: Padding(
+  //       //   padding: const EdgeInsets.all(8.0),
+  //       //   child: Text(
+  //       //     text,
+  //       //     textAlign: TextAlign.center,
+  //       //     style: TextStyle(fontWeight: FontWeight.bold),
+  //       //   ),
+  //       // ),
+  //     ),
+  //   );
+  // }
 
 /* This method is to setup the post */
   // Container _post(
@@ -263,8 +264,7 @@ class FeedsStream extends StatelessWidget {
           if (!snapshot.hasData) {
             return Center(
               child: CircularProgressIndicator(
-                backgroundColor: Colors.green,
-              ),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green)),
             );
           }
           final posts = snapshot.data.docs;
@@ -276,6 +276,17 @@ class FeedsStream extends StatelessWidget {
             final likes = post.get('likes');
             final Timestamp timestamp = post.get('timestamp');
             final postId = post.get('postId');
+            final postUserUid = post.get('uid');
+            QuerySnapshot snapshots = context.watch<QuerySnapshot>();
+            String meraUserImage;
+
+            final users = snapshots.docs;
+            for (var user in users) {
+              final auser = user.get('uid');
+              if (auser == postUserUid) {
+                meraUserImage = user.get('imageLink');
+              }
+            }
             singlePost.add(
               SinglePost(
                 name: username,
@@ -285,17 +296,17 @@ class FeedsStream extends StatelessWidget {
                 description: recipe,
                 width: width,
                 comments: 0,
-                image: Image.asset('assets/images/dal_gosht.jpg'),
+                userImage: meraUserImage,
                 postId: postId,
               ),
             );
-            print(singlePost.toString());
           }
           return Expanded(
             child: ListView(
               cacheExtent: 1000,
               physics: AlwaysScrollableScrollPhysics(),
               shrinkWrap: true,
+              reverse: true,
               children: singlePost,
             ),
           );
@@ -307,20 +318,20 @@ class SinglePost extends StatefulWidget {
   final String name, time, description;
   final int comments, likes;
   final double width;
-  final Image image;
+  final String userImage;
   final String postImageUrl;
   final String postId;
 
   SinglePost(
       {this.comments,
       this.description,
-      this.image,
       this.likes,
       this.name,
       this.time,
       this.width,
       this.postImageUrl,
-      this.postId});
+      this.postId,
+      this.userImage});
 
   @override
   _SinglePostState createState() => _SinglePostState();
@@ -366,141 +377,143 @@ class _SinglePostState extends State<SinglePost> {
     final _width = MediaQuery.of(context).size.width;
 
     return SafeArea(
-        child: Column(
-      children: [
-        Container(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              SizedBox(
-                height: _height * 0.02,
-              ),
-              Row(
-                children: <Widget>[
-                  SizedBox(
-                    width: _width * 0.02,
-                  ),
-                  Icon(
-                    Icons.account_circle,
-                    size: _width * 0.1,
-                  ),
-                  SizedBox(
-                    width: _width * 0.01,
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(widget.name,
-                          style: TextStyle(
-                              fontSize: _height * 0.02,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black)),
-                      Text(
-                        correctTime(widget.time),
-                        style: TextStyle(
-                            fontSize: _height * 0.012, color: Colors.black54),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Container(
-                  margin: EdgeInsets.symmetric(
-                      horizontal: _width * .05, vertical: _height * 0.01),
-                  child: Text(widget.description)),
-              if (widget.postImageUrl != null)
-                Container(
-                  padding: EdgeInsets.all(_width * 0.05),
-
-                  color: Colors.white,
-                  height: _height * 0.55,
-                  // width: _width,
-                  child: Center(
-                    child: CachedNetworkImage(
-                      placeholder: (context, url) => CircularProgressIndicator(
-                          valueColor:
-                              new AlwaysStoppedAnimation<Color>(Colors.green)),
-                      imageUrl: widget.postImageUrl,
-                    ),
-                  ),
+      child: Column(
+        children: [
+          Container(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  height: _height * 0.02,
                 ),
-              Container(
-                padding: EdgeInsets.all(_width * .02),
-                child: Row(
+                Row(
                   children: <Widget>[
-                    GestureDetector(
-                      onTap: () async {
-                        setState(() {
-                          increment = !increment;
-                        });
-                        if (increment) {
-                          print(widget.postId);
-                          await _cloudFirestore.incrementingPostLikes(
-                              widget.postId, widget.likes, increment);
-                        } else {
-                          await _cloudFirestore.incrementingPostLikes(
-                              widget.postId, widget.likes - 2, increment);
-                        }
-                      },
-                      child: increment
-                          ? Icon(
-                              Icons.favorite,
-                              color: Color(0xff08a963),
-                              size: 25,
-                            )
-                          : Icon(Icons.favorite_outline_sharp,
-                              color: Color(0xff08a963), size: 23),
-                    ),
-
                     SizedBox(
-                      width: _width * 0.002,
+                      width: _width * 0.02,
                     ),
-                    Text(
-                      '${widget.likes}',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(
-                      width: _width * 0.03,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        showModalBottomSheet(
-                          backgroundColor: Colors.black.withOpacity(0),
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (context) => BottomCommentsSheetBuilder(
-                            postId: widget.postId,
-                          ),
-                        );
-                        getCommentsLength();
-                      },
-                      child: Container(
-                        height: _height * 0.025,
-                        width: _width * 0.05,
-                        child: SvgPicture.asset('assets/icons/chat.svg'),
-                      ),
+                    CircleAvatar(
+                      radius: _width * 0.05,
+                      backgroundImage: NetworkImage(widget.userImage),
                     ),
                     SizedBox(
                       width: _width * 0.01,
                     ),
-                    Text(
-                      '$commentsSize',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(widget.name,
+                            style: TextStyle(
+                                fontSize: _height * 0.02,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black)),
+                        Text(
+                          correctTime(widget.time),
+                          style: TextStyle(
+                              fontSize: _height * 0.012, color: Colors.black54),
+                        ),
+                      ],
                     ),
-                    // SizedBox(
-                    //   width: _width * 0.8,
-                    // ),
                   ],
                 ),
-              ),
-            ],
+                Container(
+                    margin: EdgeInsets.symmetric(
+                        horizontal: _width * .05, vertical: _height * 0.01),
+                    child: Text(widget.description)),
+                if (widget.postImageUrl != null)
+                  Container(
+                    padding: EdgeInsets.all(_width * 0.05),
+
+                    color: Colors.white,
+                    height: _height * 0.55,
+                    // width: _width,
+                    child: Center(
+                      child: CachedNetworkImage(
+                        placeholder: (context, url) =>
+                            CircularProgressIndicator(
+                                valueColor: new AlwaysStoppedAnimation<Color>(
+                                    Colors.green)),
+                        imageUrl: widget.postImageUrl,
+                      ),
+                    ),
+                  ),
+                Container(
+                  padding: EdgeInsets.all(_width * .02),
+                  child: Row(
+                    children: <Widget>[
+                      GestureDetector(
+                        onTap: () async {
+                          setState(() {
+                            increment = !increment;
+                          });
+                          if (increment) {
+                            print(widget.postId);
+                            await _cloudFirestore.incrementingPostLikes(
+                                widget.postId, widget.likes, increment);
+                          } else {
+                            await _cloudFirestore.incrementingPostLikes(
+                                widget.postId, widget.likes - 2, increment);
+                          }
+                        },
+                        child: increment
+                            ? Icon(
+                                Icons.favorite,
+                                color: Color(0xff08a963),
+                                size: 25,
+                              )
+                            : Icon(Icons.favorite_outline_sharp,
+                                color: Color(0xff08a963), size: 23),
+                      ),
+
+                      SizedBox(
+                        width: _width * 0.002,
+                      ),
+                      Text(
+                        '${widget.likes}',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        width: _width * 0.03,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                            backgroundColor: Colors.black.withOpacity(0),
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (context) => BottomCommentsSheetBuilder(
+                              postId: widget.postId,
+                            ),
+                          );
+                          getCommentsLength();
+                        },
+                        child: Container(
+                          height: _height * 0.025,
+                          width: _width * 0.05,
+                          child: SvgPicture.asset('assets/icons/chat.svg'),
+                        ),
+                      ),
+                      SizedBox(
+                        width: _width * 0.01,
+                      ),
+                      Text(
+                        '$commentsSize',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      // SizedBox(
+                      //   width: _width * 0.8,
+                      // ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        SizedBox(
-          child: Container(height: _height * 0.02, color: Color(0xffE6E3E3)),
-        )
-      ],
-    ));
+          SizedBox(
+            child: Container(height: _height * 0.02, color: Color(0xffE6E3E3)),
+          )
+        ],
+      ),
+    );
   }
 }
 

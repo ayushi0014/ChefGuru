@@ -5,7 +5,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:cook_chef/Screens/Recipe/IngredientsPage.dart';
 import '../Account/AccountPage.dart';
 import '../HomePage.dart';
-import '../NotificationsPage.dart';
 import 'package:cook_chef/Models/RecipeHandler.dart';
 
 class ViewRecipesPage extends StatefulWidget {
@@ -20,7 +19,6 @@ bool hasTapped = false;
 final tabs = [
   HomePage(),
   IngredientsPage(),
-  NotificationsPage(),
   AccountPage(),
 ];
 
@@ -71,12 +69,6 @@ class _ViewRecipesPageState extends State<ViewRecipesPage> {
                     'assets/icons/chef.jpeg',
                     height: 22,
                   ),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: (currentIndex != 2)
-                      ? Icon(Icons.notifications_none)
-                      : Icon(Icons.notifications),
                   label: '',
                 ),
                 BottomNavigationBarItem(

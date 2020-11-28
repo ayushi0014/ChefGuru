@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:cook_chef/Firestore/CloudFirestore.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -126,6 +125,17 @@ class CommentsStream extends StatelessWidget {
             final likes = comment.get('likes');
             final commentId = comment.get('commentId');
             final mycomment = comment.get('comment');
+            final commentUserId = comment.get('uid');
+            QuerySnapshot snapshots = context.watch<QuerySnapshot>();
+            String meraUserImage;
+
+            final users = snapshots.docs;
+            for (var user in users) {
+              final auser = user.get('uid');
+              if (auser == commentUserId) {
+                meraUserImage = user.get('imageLink');
+              }
+            }
             commentsList.add(
               CommentTile(
                 comment: mycomment,
@@ -133,6 +143,7 @@ class CommentsStream extends StatelessWidget {
                 commentId: commentId,
                 likes: likes,
                 postId: postId,
+                userImage: meraUserImage,
               ),
             );
           }
@@ -154,8 +165,14 @@ class CommentTile extends StatefulWidget {
   final int likes;
   final String commentId;
   final String postId;
+  final String userImage;
   CommentTile(
-      {this.username, this.comment, this.commentId, this.likes, this.postId});
+      {this.username,
+      this.comment,
+      this.commentId,
+      this.likes,
+      this.postId,
+      this.userImage});
 
   @override
   _CommentTileState createState() => _CommentTileState();
@@ -205,7 +222,7 @@ class _CommentTileState extends State<CommentTile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage('assets/icons/ingredients.png'),
+                  backgroundImage: NetworkImage(widget.userImage),
                 ),
                 SizedBox(
                   width: 8.0,

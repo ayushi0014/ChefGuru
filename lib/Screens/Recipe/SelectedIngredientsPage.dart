@@ -8,7 +8,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import '../Account/AccountPage.dart';
 import '../HomePage.dart';
-import '../NotificationsPage.dart';
 import 'package:cook_chef/Screens/Recipe/IngredientsPage.dart';
 
 class SelectedIngredientsPage extends StatefulWidget {
@@ -25,7 +24,6 @@ class _SelectedIngredientsPageState extends State<SelectedIngredientsPage> {
   final tabs = [
     HomePage(),
     IngredientsPage(),
-    NotificationsPage(),
     AccountPage(),
   ];
 
@@ -82,12 +80,6 @@ class _SelectedIngredientsPageState extends State<SelectedIngredientsPage> {
                     'assets/icons/chef.jpeg',
                     height: 22,
                   ),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: (currentIndex != 2)
-                      ? Icon(Icons.notifications_none)
-                      : Icon(Icons.notifications),
                   label: '',
                 ),
                 BottomNavigationBarItem(

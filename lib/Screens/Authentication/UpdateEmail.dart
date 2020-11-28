@@ -2,9 +2,6 @@ import 'package:cook_chef/Auth/AuthenticationService.dart';
 import 'package:cook_chef/Screens/Account/AccountSettings.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
-FirebaseAuth _firebaseAuth;
 
 class UpdateEmail extends StatefulWidget {
   static final id = 'update_pass';
@@ -16,8 +13,7 @@ class _UpdateMailState extends State<UpdateEmail> {
   final _formKey = GlobalKey<FormState>();
   bool emailValidator = false;
   TextEditingController _emailController;
-  AuthenticationService _authenticationService =
-      AuthenticationService(_firebaseAuth);
+
   @override
   void initState() {
     super.initState();
@@ -89,7 +85,7 @@ class _UpdateMailState extends State<UpdateEmail> {
                       height: height * 0.02,
                     ),
                     Container(
-                      height: 40,
+                      //height: 40,
                       decoration: BoxDecoration(
                         color: Colors.grey,
                         borderRadius: BorderRadius.circular(40.0),
@@ -111,7 +107,7 @@ class _UpdateMailState extends State<UpdateEmail> {
                             cursorHeight: 8,
                             validator: (value) {
                               String pattern =
-                                  r'^(([^&lt;&gt;()[\]\\.,;:\s@\"]+(\.[^&lt;&gt;()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+                                  r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
                               RegExp regExp = new RegExp(pattern);
                               if (value.isEmpty) {
                                 return "Email is Required";
